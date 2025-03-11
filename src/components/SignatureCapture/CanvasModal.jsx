@@ -1,119 +1,79 @@
-import React, { useEffect } from "react";
-import {
-  STPadServerLibDefault,
-  STPadServerLibCommons,
-} from "./STPadServerLib-3.3.0";
+import React, { useRef, useEffect, useState } from "react";
 import "./CanvasModal.css";
 import Notification from "../notification";
 
-function CanvasModal({
-  open,
-  liveImageData,
-  setOpenModal,
-  sendDatatoMain,
-  clearCanvas,
-  scaleFactorhorizontal,
-  scaleFactorvertical,
-}) {
-  const canvasRef = React.useRef(null);
-
-  function drawStrokeStartPoint(canvasContext, softCoordX, softCoordY) {
-    canvasContext.beginPath();
-    canvasContext.arc(softCoordX, softCoordY, 0.1, 0, 2 * Math.PI, true);
-    canvasContext.fill();
-    canvasContext.stroke();
-    canvasContext.moveTo(softCoordX, softCoordY);
-  }
-
-  function isCanvasEmpty() {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-    for (let i = 3; i < imageData.length; i += 4) {
-      if (imageData[i] !== 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function drawStrokePoint(canvasContext, softCoordX, softCoordY) {
-    canvasContext.lineTo(softCoordX, softCoordY);
-    canvasContext.stroke();
-  }
+function CanvasModal({ open, setOpenModal, sendDatatoMain, clearCanvas }) {
+  const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (liveImageData !== null) {
-      const x = liveImageData.x;
-      const y = liveImageData.y;
-      const p = liveImageData.p;
-      const scaleFactorX = scaleFactorhorizontal;
-      const scaleFactorY = scaleFactorvertical;
-      ctx.fillStyle = "#fff";
-      ctx.lineWidth = 1.5;
+    const ctx = canvas.getContext("2d");
+    ctxRef.current = ctx;
 
-      ctx.strokeStyle = "#FF0000";
-      if (p === 0) {
-        drawStrokeStartPoint(ctx, x * 0.25, y * 0.25);
-      } else {
-        drawStrokePoint(ctx, x * 0.25, y * 0.25);
-      }
-    }
-  }, [liveImageData]);
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#FF0000"; // Red signature color
+  }, []);
 
   useEffect(() => {
     if (clearCanvas) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      clearCanvasHandler();
     }
   }, [clearCanvas]);
 
-  const handleRetry = async () => {
-    await STPadServerLibDefault.retrySignature();
+  const startDrawing = (event) => {
+    const { offsetX, offsetY } = getPointerPosition(event);
+    setIsDrawing(true);
+    ctxRef.current.beginPath();
+    ctxRef.current.moveTo(offsetX, offsetY);
+  };
+
+  const draw = (event) => {
+    if (!isDrawing) return;
+    const { offsetX, offsetY } = getPointerPosition(event);
+    ctxRef.current.lineTo(offsetX, offsetY);
+    ctxRef.current.stroke();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    ctxRef.current.closePath();
+  };
+
+  const clearCanvasHandler = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
-  const handleConfirm = async () => {
-    if (isCanvasEmpty()) {
+  const handleConfirm = () => {
+    const canvas = canvasRef.current;
+    if (isCanvasEmpty(canvas)) {
       Notification.showErrorMessage("Info", "Please draw a signature");
-    } else {
-      try {
-        var awaitConfirmSignature = await STPadServerLibDefault.confirmSignature();
-
-        var params = new STPadServerLibDefault.Params.getSignatureImage();
-        var params2 = new STPadServerLibDefault.Params.closePad(0);
-        params.setFileType(STPadServerLibDefault.FileType.PNG);
-        params.setPenWidth(5);
-        var awaitgetSignatureImage = await STPadServerLibDefault.getSignatureImage(params);
-
-        const base64 = awaitgetSignatureImage.file;
-        sendDatatoMain(base64);
-
-        await STPadServerLibDefault.closePad(params2);
-        await STPadServerLibCommons.destroyConnection();
-      } catch (error) {
-        console.error(error);
-      }
-      setOpenModal(false);
+      return;
     }
+
+    const base64Signature = canvas.toDataURL("image/png");
+    sendDatatoMain(base64Signature);
+    setOpenModal(false);
   };
 
-  const handleCancel = async () => {
-    setOpenModal(false);
-    try {
-      await STPadServerLibDefault.cancelSignature();
-      var params2 = new STPadServerLibDefault.Params.closePad(0);
-      await STPadServerLibDefault.closePad(params2);
-      await STPadServerLibCommons.destroyConnection();
-    } catch (error) {
-      console.error(error);
-    }
+  const isCanvasEmpty = (canvas) => {
+    const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    return !imageData.some((pixel) => pixel !== 0);
+  };
+
+  const getPointerPosition = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const touch = event.touches ? event.touches[0] : event;
+    return {
+      offsetX: touch.clientX - rect.left,
+      offsetY: touch.clientY - rect.top,
+    };
   };
 
   if (!open) return null;
@@ -122,26 +82,29 @@ function CanvasModal({
     <div className="modalBackground">
       <div className="modalContainer">
         <div className="titleCloseBtn">
-          <button type="button" onClick={handleCancel}>
-            X
-          </button>
+          <button type="button" onClick={() => setOpenModal(false)}>X</button>
         </div>
         <div className="title">
-          <h1>Please sign on the pad</h1>
+          <h1>Sign Below</h1>
         </div>
         <div className="body">
-          <canvas ref={canvasRef} width={300} height={200} />
+          <canvas
+            ref={canvasRef}
+            width={300}
+            height={200}
+            className="signatureCanvas"
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseOut={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+          />
         </div>
         <div className="footer">
-          <button onClick={handleCancel} type="button" id="cancelBtn">
-            Cancel
-          </button>
-          <button type="button" onClick={handleConfirm}>
-            Confirm
-          </button>
-          <button type="button" onClick={handleRetry}>
-            Retry
-          </button>
+          <button onClick={clearCanvasHandler} id="retryBtn">Retry</button>
+          <button onClick={handleConfirm} id="confirmBtn">Confirm</button>
         </div>
       </div>
     </div>

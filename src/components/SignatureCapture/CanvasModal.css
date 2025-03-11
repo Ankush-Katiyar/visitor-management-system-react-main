@@ -72,4 +72,10 @@
     background-color: #ff9800;
     color: white;
   }
+  .signatureCanvas {
+    border: 2px solid black;
+    background: white;
+    cursor: crosshair;
+    touch-action: none; /* Prevents scrolling while signing */
+  }
   

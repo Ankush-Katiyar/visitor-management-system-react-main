@@ -2,10 +2,11 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext.jsx";
 import Notification from "../../components/notification";
-import modlogo from "../../assets/images/web-logo.png";
+import modlogo from "../../assets/images/Visitor-Logo.svg";
 import footerwave from "../../assets/images/footer-wave.png";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loading from "../../components/loading";
+import test from "../../assets/images/test.jpg";
 
 const Login = () => {
   let navigate = useNavigate();

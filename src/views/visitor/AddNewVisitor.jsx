@@ -88,34 +88,48 @@ const AddNewVisitor = ({ open, onClose, fetchData, onActionClick }) => {
     setErrors({ ...errors, [name]: null });
   };
 
-  const handleSave = async () => {
+  // const handleSave = async () => {
+  //   if (!validate()) return;
+  //   try {
+  //     visitorData.image = imageData;
+  //     visitorData.signature = signatureData;
+  //     const response = await fetch(`${url}/visitor/visitor-info`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //       body: JSON.stringify(visitorData),
+  //     });
+  //     const json = await response.json();
+  //     if (response.ok) {
+  //       Notification.showSuccessMessage("Success", "Visitor Added Successfully");
+  //       onActionClick('view', json);
+  //       // setVisitorCreated(json);
+  //       handleClose();
+  //       fetchData();
+  //     } else {
+  //       const json = await response.json();
+  //       Notification.showErrorMessage("Error", json.error);
+  //     }
+  //   } catch (error) {
+  //     Notification.showErrorMessage("Error", "Server error");
+  //   }
+  // };
+  const handleSave = () => {
     if (!validate()) return;
-    try {
-      visitorData.image = imageData;
-      visitorData.signature = signatureData;
-      const response = await fetch(`${url}/visitor/visitor-info`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(visitorData),
-      });
-      const json = await response.json();
-      if (response.ok) {
-        Notification.showSuccessMessage("Success", "Visitor Added Successfully");
-        onActionClick('view', json);
-        // setVisitorCreated(json);
-        handleClose();
-        fetchData();
-      } else {
-        const json = await response.json();
-        Notification.showErrorMessage("Error", json.error);
-      }
-    } catch (error) {
-      Notification.showErrorMessage("Error", "Server error");
-    }
+    
+    visitorData.image = imageData;
+    visitorData.signature = signatureData;
+    
+    console.log("Visitor Data Saved:", visitorData);
+  
+    Notification.showSuccessMessage("Success", "Visitor Added Successfully");
+    onActionClick('view', visitorData);
+    
+    handleClose();
   };
+  
 
   const handleImageCapture = (base64Image) => {
     setImageData(base64Image);
