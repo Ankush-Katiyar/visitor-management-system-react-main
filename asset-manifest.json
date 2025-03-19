@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/static/css/main.4284410e.css",
+    "main.js": "/static/js/main.7fbb7be7.js",
+    "static/js/453.93b9468f.chunk.js": "/static/js/453.93b9468f.chunk.js",
+    "static/media/mod-logo.png": "/static/media/mod-logo.8f228df0299492eef562.png",
+    "static/media/essi-logo.png": "/static/media/essi-logo.53ceecb98f1a4b12f294.png",
+    "static/media/test.jpg": "/static/media/test.4275bd08396d1e8cff37.jpg",
+    "static/media/Visitor-Logo.svg": "/static/media/Visitor-Logo.f7c74aa15079a44671b0b12830c3fce5.svg",
+    "static/media/vms-logo.png": "/static/media/vms-logo.96ab155cfa66218d6c7d.png",
+    "static/media/becil.png": "/static/media/becil.3ef0fedcbde2fe97ae34.png",
+    "static/media/passlogo.png": "/static/media/passlogo.2473681372abf5884e6b.png",
+    "index.html": "/index.html",
+    "main.4284410e.css.map": "/static/css/main.4284410e.css.map",
+    "main.7fbb7be7.js.map": "/static/js/main.7fbb7be7.js.map",
+    "453.93b9468f.chunk.js.map": "/static/js/453.93b9468f.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4284410e.css",
+    "static/js/main.7fbb7be7.js"
+  ]
+}
